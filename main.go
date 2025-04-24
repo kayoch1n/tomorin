@@ -1,65 +1,23 @@
+/*
+Copyright © 2025 kayoch1n <hanayolawk@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 package main
 
-import (
-	"flag"
-	"log"
-	"os"
-	"time"
-
-	"gopkg.in/yaml.v3"
-
-	"github.com/kayoch1n/tomorin/revsh"
-)
-
-var (
-	configFile    string
-	scriptTimeout int
-	waitTimeout   int
-	// tcpPort       int
-	// udpPort       int
-	target string
-)
+import "github.com/kayoch1n/tomorin/cmd"
 
 func main() {
-	flag.StringVar(&configFile, "c", "config.yml", "config file")
-	flag.IntVar(&scriptTimeout, "timeout", 10, "timeout for each script")
-	flag.IntVar(&waitTimeout, "wait", 10, "timeout until next script")
-	flag.StringVar(&target, "t", "", "SSH target")
-	flag.Parse()
-
-	if target == "" {
-		log.Fatalf("SSH target is required")
-	}
-
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		log.Fatalf("failed to open config file:%v\n", err)
-	}
-	var config revsh.Config
-	yaml.Unmarshal(data, &config)
-	log.Printf("%d samples loaded\n", len(config.Samples))
-
-	if config.Timeout == 0 {
-		config.Timeout = scriptTimeout
-	}
-	if config.Wait == 0 {
-		config.Wait = waitTimeout
-	}
-
-	var results []revsh.Result
-	results, err = revsh.Execute(target, &config)
-	if err != nil {
-		log.Fatalf("failed to execute: %v\n", err)
-	}
-
-	data, err = yaml.Marshal(results)
-	if err != nil {
-		log.Fatalf("failed to marshal: %v\n", err)
-	}
-
-	now := time.Now().Format("20060102150405")
-	filename := now + ".yml"
-	os.WriteFile(filename, data, 0644)
-	log.Printf("configs saved to %s\n", filename)
+	cmd.Execute()
 }
-

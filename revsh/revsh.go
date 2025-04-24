@@ -1,4 +1,4 @@
-package revsh 
+package revsh
 
 import (
 	"bytes"
@@ -15,32 +15,33 @@ import (
 
 type properties struct {
 	Timeout int `yaml:"timeout,omitempty"`
-	Wait int `yaml:"wait,omitempty"`
+	Wait    int `yaml:"wait,omitempty"`
 }
 
 type Sample struct {
-	Name   string `yaml:"name,omitempty"`
-	Script string `yaml:"script,omitempty"`
+	Name       string `yaml:"name,omitempty"`
+	Script     string `yaml:"script,omitempty"`
 	properties `yaml:",inline"`
 }
 
 type Result struct {
 	Sample `yaml:",inline"`
-	Start  string `yaml:"start,omitempty"` // start time of the execution
-	End    string `yaml:"end,omitempty"`  // end time of the execution
+	Start  string `yaml:"start,omitempty"`  // start time of the execution
+	End    string `yaml:"end,omitempty"`    // end time of the execution
 	Stderr string `yaml:"stderr,omitempty"` // captured stderr of the execution
 	Stdout string `yaml:"stdout,omitempty"` // captured stdout of the execution
 }
 
 type Config struct {
 	Samples []Sample `yaml:"samples,omitempty"`
+	Depends []string `yaml:"depends,omitempty"`
+	//Require	   []string `yaml:"require,omitempty"`
 	properties `yaml:",inline"`
 }
 
 func (c *Sample) content() string {
 	return c.Script + "\nexit\n"
 }
-
 
 func Execute(target string, config *Config) (results []Result, err error) {
 	for _, sample := range config.Samples {
@@ -52,7 +53,7 @@ func Execute(target string, config *Config) (results []Result, err error) {
 		}
 		result := Result{
 			Sample: sample,
-			Start: time.Now().Format("2006-01-02 15:04:05"),
+			Start:  time.Now().Format("2006-01-02 15:04:05"),
 		}
 		log.Printf("execute script %s at %s\n", result.Name, result.Start)
 		func() {
@@ -64,7 +65,7 @@ func Execute(target string, config *Config) (results []Result, err error) {
 			defer os.Remove(file.Name())
 
 			if err = os.WriteFile(file.Name(), []byte(sample.content()), 0644); err != nil {
-				return 
+				return
 			}
 
 			script := fmt.Sprintf("ssh %s -t -t bash < %s", target, file.Name())
@@ -81,7 +82,7 @@ func Execute(target string, config *Config) (results []Result, err error) {
 			}()
 			cmd := exec.CommandContext(ctx, "bash", "-c", script)
 			log.Printf("cmdline: %s\n", shellquote.Join(cmd.Args...))
-			cmd.WaitDelay = time.Duration(1)*time.Second
+			cmd.WaitDelay = time.Duration(1) * time.Second
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stderr
 			if err := cmd.Run(); err != nil {
@@ -93,4 +94,3 @@ func Execute(target string, config *Config) (results []Result, err error) {
 	}
 	return
 }
-

@@ -1,2 +1,3 @@
 bin
-*.yml
+/*.yml
+check-deps

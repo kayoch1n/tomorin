@@ -82,6 +82,7 @@ func Execute(target string, config *Config) (results []Result, err error) {
 			}()
 			cmd := exec.CommandContext(ctx, "bash", "-c", script)
 			log.Printf("cmdline: %s\n", shellquote.Join(cmd.Args...))
+			// https://stackoverflow.com/a/78429315/8706476
 			cmd.WaitDelay = time.Duration(1) * time.Second
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stderr

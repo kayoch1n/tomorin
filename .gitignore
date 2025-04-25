@@ -1,3 +1,5 @@
 bin
 /*.yml
 check-deps
+.vscode
+*.code-worksapce

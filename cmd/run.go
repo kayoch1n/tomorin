@@ -31,7 +31,6 @@ var runOpts = struct {
 	config  string
 	timeout int
 	wait    int
-	target  string
 }{}
 
 // runCmd represents the run command
@@ -40,10 +39,6 @@ var runCmd = &cobra.Command{
 	Short: "Run reverse shell samples on the target",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		if runOpts.target == "" {
-			log.Fatalf("SSH target is required")
-		}
-
 		data, err := os.ReadFile(runOpts.config)
 		if err != nil {
 			log.Fatalf("failed to open config file:%v\n", err)
@@ -59,11 +54,7 @@ var runCmd = &cobra.Command{
 			config.Wait = runOpts.timeout
 		}
 
-		var results []revsh.Result
-		results, err = revsh.Execute(runOpts.target, &config)
-		if err != nil {
-			log.Fatalf("failed to execute: %v\n", err)
-		}
+		results := revsh.Execute(&config)
 
 		data, err = yaml.Marshal(results)
 		if err != nil {
@@ -92,5 +83,4 @@ func init() {
 	runCmd.Flags().StringVarP(&runOpts.config, "config", "c", "config.yml", "Path to the config file")
 	runCmd.Flags().IntVar(&runOpts.timeout, "timeout", 10, "Timeout of each sample")
 	runCmd.Flags().IntVar(&runOpts.wait, "wait", 7, "Timeout until the next sample")
-	runCmd.Flags().StringVarP(&runOpts.target, "target", "t", "", "Target on which the samples to be executed")
 }

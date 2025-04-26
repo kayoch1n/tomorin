@@ -36,8 +36,7 @@ var runOpts = struct {
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Run reverse shell samples on the target",
-	Long:  "",
+	Short: "Run reverse shell samples from current host",
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := os.ReadFile(runOpts.config)
 		if err != nil {

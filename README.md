@@ -65,6 +65,6 @@ samples:
 
 ## TODO
 
-- [ x ] Reverse shell server
-    - [ x ] TCP
-    - [ x ] UDP
+- [x] Reverse shell server
+    - [x] TCP
+    - [x] UDP

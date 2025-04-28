@@ -90,11 +90,11 @@ func Execute(config *Config) (results []Result) {
 
 			output, err := executeInPty(ctx, script)
 			result.Terminal = output
+			time.Sleep(time.Duration(sample.Wait) * time.Second)
 			result.End = time.Now().Format("2006-01-02 15:04:05")
 
 			log.Printf("script %s finished at %s. %d byte(s) read - %v\n", result.Name, result.End, len(output), err)
 			results = append(results, result)
-			time.Sleep(time.Duration(sample.Wait) * time.Second)
 
 		}()
 	}
